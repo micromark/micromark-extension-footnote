@@ -1,0 +1,4 @@
+coverage/
+*.json
+*.html
+*.md
