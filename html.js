@@ -1,6 +1,7 @@
 var normalizeIdentifier = require('micromark/dist/util/normalize-identifier')
 
 exports.enter = {
+  footnoteDefinition: enterFootnoteDefinition,
   footnoteDefinitionLabelString: buffer,
   footnoteCallString: buffer,
   inlineNoteText: enterNoteText
@@ -29,6 +30,10 @@ function exitFootnoteDefinitionLabelString(token) {
   this.buffer() // Get ready for a value.
 }
 
+function enterFootnoteDefinition() {
+  this.getData('tightStack').push(false)
+}
+
 function exitFootnoteDefinition() {
   var definitions = this.getData('footnoteDefinitions')
   var stack = this.getData('footnoteDefinitionStack')
@@ -37,6 +42,12 @@ function exitFootnoteDefinition() {
 
   if (!definitions) this.setData('footnoteDefinitions', (definitions = {}))
   if (!own.call(definitions, current)) definitions[current] = value
+
+  this.getData('tightStack').pop()
+  this.setData('slurpOneLineEnding', true)
+  // “Hack” to prevent a line ending from showing up if we’re in a definition in
+  // an empty list item.
+  this.setData('lastWasTag')
 }
 
 function exitFootnoteCallString(token) {

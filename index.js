@@ -258,7 +258,7 @@ function tokenizeDefinitionStart(effects, ok, nok) {
       return nok(code)
     }
 
-    effects.enter('footnoteDefinition')
+    effects.enter('footnoteDefinition')._container = true
     effects.enter('footnoteDefinitionLabel')
     effects.enter('footnoteDefinitionLabelMarker')
     effects.consume(code)
