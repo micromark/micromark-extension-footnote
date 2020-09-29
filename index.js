@@ -2,7 +2,8 @@ module.exports = footnote
 
 var normalizeIdentifier = require('micromark/dist/util/normalize-identifier')
 var blank = require('micromark/dist/tokenize/partial-blank-line')
-var createSpaceTokenizer = require('micromark/dist/tokenize/partial-space')
+var createSpace = require('micromark/dist/tokenize/factory-space')
+var chunkedSplice = require('micromark/dist/util/chunked-splice')
 var prefixSize = require('micromark/dist/util/prefix-size')
 var shallow = require('micromark/dist/util/shallow')
 var resolveAll = require('micromark/dist/util/resolve-all')
@@ -90,22 +91,36 @@ function resolveToNoteEnd(events, context) {
     end: shallow(events[events.length - 3][1].start)
   }
 
-  return [].concat(
-    events.slice(0, openIndex),
-    [['enter', group, context]],
-    // Opening markers.
-    events.slice(openIndex + 1, openIndex + 5),
-    [['enter', text, context]],
+  var note = [
+    ['enter', group, context],
+    events[openIndex + 1],
+    events[openIndex + 2],
+    events[openIndex + 3],
+    events[openIndex + 4],
+    ['enter', text, context]
+  ]
+
+  chunkedSplice(
+    note,
+    note.length,
+    0,
     resolveAll(
       context.parser.constructs.insideSpan.null,
       events.slice(openIndex + 6, -4),
       context
-    ),
-    [['exit', text, context]],
-    // Closing marker.
-    events.slice(-3),
-    [['exit', group, context]]
+    )
   )
+
+  note.push(
+    ['exit', text, context],
+    events[events.length - 2],
+    events[events.length - 3],
+    ['exit', group, context]
+  )
+
+  chunkedSplice(events, index, events.length - index, note)
+
+  return events
 }
 
 function tokenizeFootnoteCall(effects, ok, nok) {
@@ -417,10 +432,7 @@ function footnoteDefinitionEnd(effects) {
 function tokenizeIndent(effects, ok, nok) {
   var self = this
 
-  return effects.attempt(
-    createSpaceTokenizer('footnoteDefinitionIndent', 5),
-    afterPrefix
-  )
+  return createSpace(effects, afterPrefix, 'footnoteDefinitionIndent', 5)
 
   function afterPrefix(code) {
     return prefixSize(self.events, 'footnoteDefinitionIndent') === 4

@@ -27,7 +27,7 @@
     "html.js"
   ],
   "dependencies": {
-    "micromark": "~2.8.0"
+    "micromark": "~2.9.0"
   },
   "devDependencies": {
     "nyc": "^15.0.0",
