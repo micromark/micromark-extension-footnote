@@ -134,7 +134,7 @@ export const footnoteHtml = {
 
       if (calls.length > 0) {
         this.lineEndingIfNeeded()
-        this.tag('<div class="footnotes">')
+        this.tag('<section class="footnotes" role="doc-endnotes">')
         this.lineEndingIfNeeded()
         this.tag('<hr />')
         this.lineEndingIfNeeded()
@@ -146,14 +146,17 @@ export const footnoteHtml = {
         id = calls[index]
         counter = String(index + 1)
         injected = false
-        back = '<a href="#fnref' + counter + '" class="footnote-back">↩︎</a>'
+        back =
+          '<a href="#fnref' +
+          counter +
+          '" class="footnote-back" role="doc-backlink">↩︎</a>'
         value = (typeof id === 'number' ? notes : definitions)[id].replace(
           /<\/p>(?:\r?\n|\r)?$/,
           injectBack
         )
 
         this.lineEndingIfNeeded()
-        this.tag('<li id="fn' + counter + '">')
+        this.tag('<li id="fn' + counter + '" role="doc-endnote">')
         this.lineEndingIfNeeded()
         this.raw(value)
 
@@ -170,7 +173,7 @@ export const footnoteHtml = {
         this.lineEndingIfNeeded()
         this.tag('</ol>')
         this.lineEndingIfNeeded()
-        this.tag('</div>')
+        this.tag('</section>')
       }
 
       /**
@@ -195,7 +198,7 @@ function createCall(counter) {
       counter +
       '" class="footnote-ref" id="fnref' +
       counter +
-      '"><sup>'
+      '" role="doc-noteref"><sup>'
   )
   this.raw(counter)
   this.tag('</sup></a>')
