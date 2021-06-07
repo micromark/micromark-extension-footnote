@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import test from 'tape'
 import {micromark} from 'micromark'
-import {footnote as syntax, footnoteHtml as html} from '../index.js'
+import {footnote as syntax, footnoteHtml as html} from '../dev/index.js'
 
 test('markdown -> html (micromark)', (t) => {
   t.deepEqual(

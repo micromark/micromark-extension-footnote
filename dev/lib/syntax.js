@@ -1,6 +1,14 @@
+import assert from 'assert'
 import {blankLine} from 'micromark-core-commonmark'
 import {factorySpace} from 'micromark-factory-space'
+import {
+  markdownLineEnding,
+  markdownLineEndingOrSpace,
+  markdownSpace
+} from 'micromark-util-character'
 import {splice} from 'micromark-util-chunked'
+import {codes} from 'micromark-util-symbol/codes.js'
+import {constants} from 'micromark-util-symbol/constants.js'
 import {normalizeIdentifier} from 'micromark-util-normalize-identifier'
 import {resolveAll} from 'micromark-util-resolve-all'
 
@@ -21,16 +29,16 @@ export function footnote(options) {
     continuation: {tokenize: tokenizeDefinitionContinuation},
     exit: footnoteDefinitionEnd
   }
-  const text = {91: call}
+  const text = {[codes.leftSquareBracket]: call}
 
   if (settings.inlineNotes) {
-    text[93] = noteEnd
-    text[94] = noteStart
+    text[codes.rightSquareBracket] = noteEnd
+    text[codes.caret] = noteStart
   }
 
   return {
     _hiddenFootnoteSupport: {},
-    document: {91: definition},
+    document: {[codes.leftSquareBracket]: definition},
     text
   }
 }
@@ -124,9 +132,7 @@ function tokenizeFootnoteCall(effects, ok, nok) {
   return start
 
   function start(code) {
-    // istanbul ignore next - Hooks.
-    if (code !== 91) return nok(code)
-
+    assert(code === codes.leftSquareBracket, 'expected `[`')
     effects.enter('footnoteCall')
     effects.enter('footnoteCallLabelMarker')
     effects.consume(code)
@@ -135,7 +141,7 @@ function tokenizeFootnoteCall(effects, ok, nok) {
   }
 
   function callStart(code) {
-    if (code !== 94) return nok(code)
+    if (code !== codes.caret) return nok(code)
 
     effects.enter('footnoteCallMarker')
     effects.consume(code)
@@ -148,11 +154,15 @@ function tokenizeFootnoteCall(effects, ok, nok) {
   function callData(code) {
     let token
 
-    if (code === null || code === 91 || size++ > 999) {
+    if (
+      code === codes.eof ||
+      code === codes.leftSquareBracket ||
+      size++ > constants.linkReferenceSizeMax
+    ) {
       return nok(code)
     }
 
-    if (code === 93) {
+    if (code === codes.rightSquareBracket) {
       if (!data) {
         return nok(code)
       }
@@ -166,15 +176,19 @@ function tokenizeFootnoteCall(effects, ok, nok) {
 
     effects.consume(code)
 
-    if (!(code < 0 || code === 32)) {
+    if (!markdownLineEndingOrSpace(code)) {
       data = true
     }
 
-    return code === 92 ? callEscape : callData
+    return code === codes.backslash ? callEscape : callData
   }
 
   function callEscape(code) {
-    if (code === 91 || code === 92 || code === 93) {
+    if (
+      code === codes.leftSquareBracket ||
+      code === codes.backslash ||
+      code === codes.rightSquareBracket
+    ) {
       effects.consume(code)
       size++
       return callData
@@ -197,9 +211,7 @@ function tokenizeNoteStart(effects, ok, nok) {
   return start
 
   function start(code) {
-    // istanbul ignore next - Hooks.
-    if (code !== 94) return nok(code)
-
+    assert(code === codes.caret, 'expected `^`')
     effects.enter('inlineNoteStart')
     effects.enter('inlineNoteMarker')
     effects.consume(code)
@@ -208,7 +220,7 @@ function tokenizeNoteStart(effects, ok, nok) {
   }
 
   function noteStart(code) {
-    if (code !== 91) return nok(code)
+    if (code !== codes.leftSquareBracket) return nok(code)
 
     effects.enter('inlineNoteStartMarker')
     effects.consume(code)
@@ -224,6 +236,7 @@ function tokenizeNoteEnd(effects, ok, nok) {
   return start
 
   function start(code) {
+    assert(code === codes.rightSquareBracket, 'expected `]`')
     let index = self.events.length
     let hasStart
 
@@ -235,8 +248,7 @@ function tokenizeNoteEnd(effects, ok, nok) {
       }
     }
 
-    // istanbul ignore next - Hooks.
-    if (code !== 93 || !hasStart) {
+    if (!hasStart) {
       return nok(code)
     }
 
@@ -259,11 +271,7 @@ function tokenizeDefinitionStart(effects, ok, nok) {
   return start
 
   function start(code) {
-    /* istanbul ignore if - hooks. */
-    if (code !== 91) {
-      return nok(code)
-    }
-
+    assert(code === codes.leftSquareBracket, 'expected `[`')
     effects.enter('footnoteDefinition')._container = true
     effects.enter('footnoteDefinitionLabel')
     effects.enter('footnoteDefinitionLabelMarker')
@@ -274,7 +282,7 @@ function tokenizeDefinitionStart(effects, ok, nok) {
 
   function labelStart(code) {
     // `^`
-    if (code !== 94) return nok(code)
+    if (code !== codes.caret) return nok(code)
 
     effects.enter('footnoteDefinitionMarker')
     effects.consume(code)
@@ -286,11 +294,15 @@ function tokenizeDefinitionStart(effects, ok, nok) {
   function atBreak(code) {
     let token
 
-    if (code === null || code === 91 || size > 999) {
+    if (
+      code === codes.eof ||
+      code === codes.leftSquareBracket ||
+      size > constants.linkReferenceSizeMax
+    ) {
       return nok(code)
     }
 
-    if (code === 93) {
+    if (code === codes.rightSquareBracket) {
       if (!data) {
         return nok(code)
       }
@@ -304,7 +316,7 @@ function tokenizeDefinitionStart(effects, ok, nok) {
       return labelAfter
     }
 
-    if (code === -5 || code === -4 || code === -3) {
+    if (markdownLineEnding(code)) {
       effects.enter('lineEnding')
       effects.consume(code)
       effects.exit('lineEnding')
@@ -318,29 +330,31 @@ function tokenizeDefinitionStart(effects, ok, nok) {
 
   function label(code) {
     if (
-      code === null ||
-      code === -5 ||
-      code === -4 ||
-      code === -3 ||
-      code === 91 ||
-      code === 93 ||
-      size > 999
+      code === codes.eof ||
+      markdownLineEnding(code) ||
+      code === codes.leftSquareBracket ||
+      code === codes.rightSquareBracket ||
+      size > constants.linkReferenceSizeMax
     ) {
       effects.exit('chunkString')
       return atBreak(code)
     }
 
-    if (!(code < 0 || code === 32)) {
+    if (!markdownLineEndingOrSpace(code)) {
       data = true
     }
 
     size++
     effects.consume(code)
-    return code === 92 ? labelEscape : label
+    return code === codes.backslash ? labelEscape : label
   }
 
   function labelEscape(code) {
-    if (code === 91 || code === 92 || code === 93) {
+    if (
+      code === codes.leftSquareBracket ||
+      code === codes.backslash ||
+      code === codes.rightSquareBracket
+    ) {
       effects.consume(code)
       size++
       return label
@@ -350,7 +364,7 @@ function tokenizeDefinitionStart(effects, ok, nok) {
   }
 
   function labelAfter(code) {
-    if (code !== 58) {
+    if (code !== codes.colon) {
       return nok(code)
     }
 
@@ -366,8 +380,7 @@ function tokenizeDefinitionStart(effects, ok, nok) {
   }
 
   function nonBlank(code) {
-    // A space or tab.
-    if (code === -2 || code === -1 || code === 32) {
+    if (markdownSpace(code)) {
       effects.enter('footnoteDefinitionWhitespace')
       effects.consume(code)
       effects.exit('footnoteDefinitionWhitespace')
@@ -403,10 +416,7 @@ function tokenizeDefinitionContinuation(effects, ok, nok) {
 
   // If there were continued blank lines, or this isn’t indented at all.
   function notBlank(code) {
-    if (
-      self.containerState.furtherBlankLines ||
-      !(code === -2 || code === -1 || code === 32)
-    ) {
+    if (self.containerState.furtherBlankLines || !markdownSpace(code)) {
       return nok(code)
     }
 
@@ -423,13 +433,18 @@ function footnoteDefinitionEnd(effects) {
 function tokenizeIndent(effects, ok, nok) {
   const self = this
 
-  return factorySpace(effects, afterPrefix, 'footnoteDefinitionIndent', 5)
+  return factorySpace(
+    effects,
+    afterPrefix,
+    'footnoteDefinitionIndent',
+    constants.tabSize + 1
+  )
 
   function afterPrefix(code) {
     const tail = self.events[self.events.length - 1]
     return tail &&
       tail[1].type === 'footnoteDefinitionIndent' &&
-      tail[2].sliceSerialize(tail[1], true).length === 4
+      tail[2].sliceSerialize(tail[1], true).length === constants.tabSize
       ? ok(code)
       : nok(code)
   }
