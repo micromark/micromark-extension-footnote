@@ -4,7 +4,7 @@ import test from 'tape'
 import {micromark} from 'micromark'
 import {footnote as syntax, footnoteHtml as html} from '../index.js'
 
-test('markdown -> html (micromark)', function (t) {
+test('markdown -> html (micromark)', (t) => {
   t.deepEqual(
     micromark('^[inline]', {
       extensions: [syntax()],
@@ -42,7 +42,7 @@ test('markdown -> html (micromark)', function (t) {
   )
 
   // 999 `x` characters.
-  var max = Array.from({length: 1000}).join('x')
+  const max = Array.from({length: 1000}).join('x')
 
   t.deepEqual(
     micromark('Call.[^' + max + '].\n\n[^' + max + ']: y', {
@@ -119,31 +119,23 @@ test('markdown -> html (micromark)', function (t) {
   t.end()
 })
 
-test('fixtures', function (t) {
-  var base = path.join('test', 'fixtures')
-
-  const files = fs
-    .readdirSync(base)
-    .filter((d) => /\.md$/.test(d))
-    .map((d) => path.basename(d, path.extname(d)))
-
-  var index = -1
+test('fixtures', (t) => {
+  const base = path.join('test', 'fixtures')
+  const files = fs.readdirSync(base).filter((d) => /\.md$/.test(d))
+  let index = -1
 
   while (++index < files.length) {
-    each(files[index])
-  }
-
-  function each(name) {
-    var input = fs.readFileSync(path.join(base, name + '.md'))
-    var actual = micromark(input, {
+    const name = path.basename(files[index], '.md')
+    const input = fs.readFileSync(path.join(base, name + '.md'))
+    const actual = micromark(input, {
       extensions: [syntax({inlineNotes: true})],
       htmlExtensions: [html]
     })
-    var expected
+    let expected
 
     try {
       expected = String(fs.readFileSync(path.join(base, name + '.html')))
-    } catch (_) {}
+    } catch {}
 
     if (expected) {
       t.deepEqual(actual, expected, name)
