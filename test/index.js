@@ -3,7 +3,7 @@ var path = require('path')
 var test = require('tape')
 var micromark = require('micromark')
 var syntax = require('..')
-var html = require('../html')
+var html = require('../html.js')
 
 test('markdown -> html (micromark)', function (t) {
   t.deepEqual(
@@ -43,7 +43,7 @@ test('markdown -> html (micromark)', function (t) {
   )
 
   // 999 `x` characters.
-  var max = new Array(1000).join('x')
+  var max = Array.from({length: 1000}).join('x')
 
   t.deepEqual(
     micromark('Call.[^' + max + '].\n\n[^' + max + ']: y', {
@@ -123,27 +123,35 @@ test('markdown -> html (micromark)', function (t) {
 test('fixtures', function (t) {
   var base = path.join(__dirname, 'fixtures')
 
-  fs.readdirSync(base)
+  const files = fs
+    .readdirSync(base)
     .filter((d) => /\.md$/.test(d))
     .map((d) => path.basename(d, path.extname(d)))
-    .forEach((name) => {
-      var input = fs.readFileSync(path.join(base, name + '.md'))
-      var actual = micromark(input, {
-        extensions: [syntax({inlineNotes: true})],
-        htmlExtensions: [html]
-      })
-      var expected
 
-      try {
-        expected = String(fs.readFileSync(path.join(base, name + '.html')))
-      } catch (_) {}
+  var index = -1
 
-      if (expected) {
-        t.deepEqual(actual, expected, name)
-      } else {
-        fs.writeFileSync(path.join(base, name + '.html'), actual)
-      }
+  while (++index < files.length) {
+    each(files[index])
+  }
+
+  function each(name) {
+    var input = fs.readFileSync(path.join(base, name + '.md'))
+    var actual = micromark(input, {
+      extensions: [syntax({inlineNotes: true})],
+      htmlExtensions: [html]
     })
+    var expected
+
+    try {
+      expected = String(fs.readFileSync(path.join(base, name + '.html')))
+    } catch (_) {}
+
+    if (expected) {
+      t.deepEqual(actual, expected, name)
+    } else {
+      fs.writeFileSync(path.join(base, name + '.html'), actual)
+    }
+  }
 
   t.end()
 })
