@@ -131,6 +131,7 @@ test('fixtures', (t) => {
       extensions: [syntax({inlineNotes: true})],
       htmlExtensions: [html]
     })
+    /** @type {string|undefined} */
     let expected
 
     try {

@@ -1,3 +1,18 @@
+/**
+ * @typedef {import('micromark-util-types').Extension} Extension
+ * @typedef {import('micromark-util-types').Resolver} Resolver
+ * @typedef {import('micromark-util-types').Token} Token
+ * @typedef {import('micromark-util-types').Tokenizer} Tokenizer
+ * @typedef {import('micromark-util-types').Exiter} Exiter
+ * @typedef {import('micromark-util-types').State} State
+ */
+
+/**
+ * @typedef Options
+ * @property {boolean} [inlineNotes=false]
+ *   Whether to support `^[inline notes]` (`boolean`, default: `false`).
+ */
+
 import assert from 'assert'
 import {blankLine} from 'micromark-core-commonmark'
 import {factorySpace} from 'micromark-factory-space'
@@ -14,8 +29,11 @@ import {resolveAll} from 'micromark-util-resolve-all'
 
 const indent = {tokenize: tokenizeIndent, partial: true}
 
-export function footnote(options) {
-  const settings = options || {}
+/**
+ * @param {Options} options
+ * @returns {Extension}
+ */
+export function footnote(options = {}) {
   const call = {tokenize: tokenizeFootnoteCall}
   const noteStart = {tokenize: tokenizeNoteStart, resolveAll: resolveAllNote}
   const noteEnd = {
@@ -31,11 +49,12 @@ export function footnote(options) {
   }
   const text = {[codes.leftSquareBracket]: call}
 
-  if (settings.inlineNotes) {
+  if (options.inlineNotes) {
     text[codes.rightSquareBracket] = noteEnd
     text[codes.caret] = noteStart
   }
 
+  /** @type {Extension} */
   return {
     _hiddenFootnoteSupport: {},
     document: {[codes.leftSquareBracket]: definition},
@@ -43,9 +62,14 @@ export function footnote(options) {
   }
 }
 
-// Remove remaining note starts.
+/**
+ * Remove remaining note starts.
+ *
+ * @type {Resolver}
+ */
 function resolveAllNote(events) {
   let index = -1
+  /** @type {Token} */
   let token
 
   while (++index < events.length) {
@@ -61,10 +85,12 @@ function resolveAllNote(events) {
   return events
 }
 
+/** @type {Resolver} */
 function resolveToNoteEnd(events, context) {
   let index = events.length - 4
+  /** @type {Token} */
   let token
-  let type
+  /** @type {number} */
   let openIndex
 
   // Find an opening.
@@ -74,13 +100,16 @@ function resolveToNoteEnd(events, context) {
     // Find where the note starts.
     if (events[index][0] === 'enter' && token.type === 'inlineNoteStart') {
       openIndex = index
-      type = 'inlineNote'
       break
     }
   }
 
+  // @ts-expect-error It’s fine.
+  assert(openIndex !== undefined, 'expected `openIndex` to be found')
+
+  /** @type {Token} */
   const group = {
-    type,
+    type: 'inlineNote',
     start: Object.assign({}, events[openIndex][1].start),
     end: Object.assign({}, events[events.length - 1][1].end)
   }
@@ -123,14 +152,19 @@ function resolveToNoteEnd(events, context) {
   return events
 }
 
+/** @type {Tokenizer} */
 function tokenizeFootnoteCall(effects, ok, nok) {
   const self = this
+  /** @type {string[]} */
+  // @ts-expect-error It’s fine!
   const defined = self.parser.footnotes || (self.parser.footnotes = [])
   let size = 0
+  /** @type {boolean} */
   let data
 
   return start
 
+  /** @type {State} */
   function start(code) {
     assert(code === codes.leftSquareBracket, 'expected `[`')
     effects.enter('footnoteCall')
@@ -140,6 +174,7 @@ function tokenizeFootnoteCall(effects, ok, nok) {
     return callStart
   }
 
+  /** @type {State} */
   function callStart(code) {
     if (code !== codes.caret) return nok(code)
 
@@ -151,7 +186,9 @@ function tokenizeFootnoteCall(effects, ok, nok) {
     return callData
   }
 
+  /** @type {State} */
   function callData(code) {
+    /** @type {Token} */
     let token
 
     if (
@@ -183,6 +220,7 @@ function tokenizeFootnoteCall(effects, ok, nok) {
     return code === codes.backslash ? callEscape : callData
   }
 
+  /** @type {State} */
   function callEscape(code) {
     if (
       code === codes.leftSquareBracket ||
@@ -197,6 +235,7 @@ function tokenizeFootnoteCall(effects, ok, nok) {
     return callData(code)
   }
 
+  /** @type {State} */
   function end(code) {
     // Always a `]`.
     effects.enter('footnoteCallLabelMarker')
@@ -207,9 +246,11 @@ function tokenizeFootnoteCall(effects, ok, nok) {
   }
 }
 
+/** @type {Tokenizer} */
 function tokenizeNoteStart(effects, ok, nok) {
   return start
 
+  /** @type {State} */
   function start(code) {
     assert(code === codes.caret, 'expected `^`')
     effects.enter('inlineNoteStart')
@@ -219,6 +260,7 @@ function tokenizeNoteStart(effects, ok, nok) {
     return noteStart
   }
 
+  /** @type {State} */
   function noteStart(code) {
     if (code !== codes.leftSquareBracket) return nok(code)
 
@@ -230,14 +272,17 @@ function tokenizeNoteStart(effects, ok, nok) {
   }
 }
 
+/** @type {Tokenizer} */
 function tokenizeNoteEnd(effects, ok, nok) {
   const self = this
 
   return start
 
+  /** @type {State} */
   function start(code) {
     assert(code === codes.rightSquareBracket, 'expected `]`')
     let index = self.events.length
+    /** @type {boolean|undefined} */
     let hasStart
 
     // Find an opening.
@@ -261,15 +306,21 @@ function tokenizeNoteEnd(effects, ok, nok) {
   }
 }
 
+/** @type {Tokenizer} */
 function tokenizeDefinitionStart(effects, ok, nok) {
   const self = this
+  /** @type {string[]} */
+  // @ts-expect-error It’s fine!
   const defined = self.parser.footnotes || (self.parser.footnotes = [])
+  /** @type {string} */
   let identifier
   let size = 0
+  /** @type {boolean|undefined} */
   let data
 
   return start
 
+  /** @type {State} */
   function start(code) {
     assert(code === codes.leftSquareBracket, 'expected `[`')
     effects.enter('footnoteDefinition')._container = true
@@ -280,6 +331,7 @@ function tokenizeDefinitionStart(effects, ok, nok) {
     return labelStart
   }
 
+  /** @type {State} */
   function labelStart(code) {
     // `^`
     if (code !== codes.caret) return nok(code)
@@ -291,7 +343,9 @@ function tokenizeDefinitionStart(effects, ok, nok) {
     return atBreak
   }
 
+  /** @type {State} */
   function atBreak(code) {
+    /** @type {Token} */
     let token
 
     if (
@@ -328,6 +382,7 @@ function tokenizeDefinitionStart(effects, ok, nok) {
     return label(code)
   }
 
+  /** @type {State} */
   function label(code) {
     if (
       code === codes.eof ||
@@ -349,6 +404,7 @@ function tokenizeDefinitionStart(effects, ok, nok) {
     return code === codes.backslash ? labelEscape : label
   }
 
+  /** @type {State} */
   function labelEscape(code) {
     if (
       code === codes.leftSquareBracket ||
@@ -363,6 +419,7 @@ function tokenizeDefinitionStart(effects, ok, nok) {
     return label(code)
   }
 
+  /** @type {State} */
   function labelAfter(code) {
     if (code !== codes.colon) {
       return nok(code)
@@ -374,11 +431,14 @@ function tokenizeDefinitionStart(effects, ok, nok) {
     return effects.check(blankLine, onBlank, nonBlank)
   }
 
+  /** @type {State} */
   function onBlank(code) {
+    // @ts-expect-error: It’s fine.
     self.containerState.initialBlankLine = true
     return done(code)
   }
 
+  /** @type {State} */
   function nonBlank(code) {
     if (markdownSpace(code)) {
       effects.enter('footnoteDefinitionWhitespace')
@@ -391,6 +451,7 @@ function tokenizeDefinitionStart(effects, ok, nok) {
     return done(code)
   }
 
+  /** @type {State} */
   function done(code) {
     if (!defined.includes(identifier)) {
       defined.push(identifier)
@@ -400,14 +461,18 @@ function tokenizeDefinitionStart(effects, ok, nok) {
   }
 }
 
+/** @type {Tokenizer} */
 function tokenizeDefinitionContinuation(effects, ok, nok) {
   const self = this
 
   return effects.check(blankLine, onBlank, notBlank)
 
   // Continued blank lines are fine.
+  /** @type {State} */
   function onBlank(code) {
+    // @ts-expect-error: It’s fine.
     if (self.containerState.initialBlankLine) {
+      // @ts-expect-error: It’s fine.
       self.containerState.furtherBlankLines = true
     }
 
@@ -415,21 +480,27 @@ function tokenizeDefinitionContinuation(effects, ok, nok) {
   }
 
   // If there were continued blank lines, or this isn’t indented at all.
+  /** @type {State} */
   function notBlank(code) {
+    // @ts-expect-error: It’s fine.
     if (self.containerState.furtherBlankLines || !markdownSpace(code)) {
       return nok(code)
     }
 
+    // @ts-expect-error: It’s fine.
     self.containerState.initialBlankLine = undefined
+    // @ts-expect-error: It’s fine.
     self.containerState.furtherBlankLines = undefined
     return effects.attempt(indent, ok, nok)(code)
   }
 }
 
+/** @type {Exiter} */
 function footnoteDefinitionEnd(effects) {
   effects.exit('footnoteDefinition')
 }
 
+/** @type {Tokenizer} */
 function tokenizeIndent(effects, ok, nok) {
   const self = this
 
@@ -440,6 +511,7 @@ function tokenizeIndent(effects, ok, nok) {
     constants.tabSize + 1
   )
 
+  /** @type {State} */
   function afterPrefix(code) {
     const tail = self.events[self.events.length - 1]
     return tail &&
