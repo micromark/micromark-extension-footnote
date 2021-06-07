@@ -23,6 +23,9 @@ You probably shouldn’t use this package directly, but instead use
 
 ## Install
 
+This package is [ESM only](https://gist.github.com/sindresorhus/a39789f98801d908bbc7ff3ecc99d99c):
+Node 12+ is needed to use it and it must be `import`ed instead of `require`d.
+
 [npm][]:
 
 ```sh
@@ -109,9 +112,12 @@ note.<a href="#fnref3" class="footnote-back">↩︎</a></p>
 
 ## API
 
-### `html`
+This package exports the following identifiers: `footnote`, `footnoteHtml`.
+There is no default export.
 
-### `syntax(options?)`
+### `footnote(options?)`
+
+### `footnoteHtml`
 
 > Note: `syntax` is the default export of this module, `html` is available at
 > `micromark-extension-footnote/html`.

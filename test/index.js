@@ -1,9 +1,8 @@
-var fs = require('fs')
-var path = require('path')
-var test = require('tape')
-var micromark = require('micromark')
-var syntax = require('..')
-var html = require('../html.js')
+import fs from 'fs'
+import path from 'path'
+import test from 'tape'
+import {micromark} from 'micromark'
+import {footnote as syntax, footnoteHtml as html} from '../index.js'
 
 test('markdown -> html (micromark)', function (t) {
   t.deepEqual(
@@ -121,7 +120,7 @@ test('markdown -> html (micromark)', function (t) {
 })
 
 test('fixtures', function (t) {
-  var base = path.join(__dirname, 'fixtures')
+  var base = path.join('test', 'fixtures')
 
   const files = fs
     .readdirSync(base)
