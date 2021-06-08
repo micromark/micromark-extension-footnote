@@ -14,12 +14,12 @@ As there is no spec for footnotes in markdown, this extension stays as close to
 references and list items in CommonMark, while being inspired by the HTML output
 of Pandoc notes.
 
-This package provides the low-level modules for integrating with the micromark
-tokenizer and the micromark HTML compiler.
+## When to use this
 
-You probably shouldn’t use this package directly, but instead use
-[`mdast-util-footnote`][mdast-util-footnote] with **[mdast][]** or
-[`remark-footnotes`][remark-footnotes] with **[remark][]**.
+If you’re using [`micromark`][micromark] or
+[`mdast-util-from-markdown`][from-markdown], use this package.
+Alternatively, if you’re using **[remark][]**, use
+[`remark-footnotes`][remark-footnotes].
 
 ## Install
 
@@ -63,35 +63,32 @@ note.]
 And our script, `example.js`, looks as follows:
 
 ```js
-var fs = require('fs')
-var micromark = require('micromark')
-var footnote = require('micromark-extension-footnote')
-var footnoteHtml = require('micromark-extension-footnote/html')
+import fs from 'fs'
+import {micromark} from 'micromark'
+import {footnote, footnoteHtml} from 'micromark-extension-footnote'
 
-var doc = fs.readFileSync('example.md')
-
-var result = micromark(doc, {
+const output = micromark(fs.readFileSync('example.md'), {
   extensions: [footnote({inlineNotes: true})],
   htmlExtensions: [footnoteHtml]
 })
 
-console.log(result)
+console.log(output)
 ```
 
 Now, running `node example` yields:
 
 ```html
-<p>Here is a footnote call,<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a> and another.<a href="#fn2" class="footnote-ref" id="fnref2"><sup>2</sup></a></p>
+<p>Here is a footnote call,<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> and another.<a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>
 <p>This paragraph won’t be part of the note, because it
 isn’t indented.</p>
-<p>Here is an inline note.<a href="#fn1" class="footnote-ref" id="fnref1"><sup>1</sup></a></p>
-<div class="footnotes">
+<p>Here is an inline note.<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a></p>
+<section class="footnotes" role="doc-endnotes">
 <hr />
 <ol>
-<li id="fn1">
-<p>Here is the footnote.<a href="#fnref1" class="footnote-back">↩︎</a></p>
+<li id="fn1" role="doc-endnote">
+<p>Here is the footnote.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩</a></p>
 </li>
-<li id="fn2">
+<li id="fn2" role="doc-endnote">
 <p>Here’s one with multiple blocks.</p>
 <p>Subsequent paragraphs are indented to show that they
 belong to the previous footnote.</p>
@@ -99,15 +96,15 @@ belong to the previous footnote.</p>
 </code></pre>
 <p>The whole paragraph can be indented, or just the first
 line.  In this way, multi-paragraph footnotes work like
-multi-paragraph list items.<a href="#fnref2" class="footnote-back">↩︎</a></p>
+multi-paragraph list items.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩</a></p>
 </li>
-<li id="fn3">
+<li id="fn3" role="doc-endnote">
 <p>Inlines notes are easier to write, since
 you don’t have to pick an identifier and move down to type the
-note.<a href="#fnref3" class="footnote-back">↩︎</a></p>
+note.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩</a></p>
 </li>
 </ol>
-</div>
+</section>
 ```
 
 ## API
@@ -115,19 +112,18 @@ note.<a href="#fnref3" class="footnote-back">↩︎</a></p>
 This package exports the following identifiers: `footnote`, `footnoteHtml`.
 There is no default export.
 
+The export map supports the endorsed
+[`development` condition](https://nodejs.org/api/packages.html#packages_resolving_user_conditions).
+Run `node --conditions development module.js` to get instrumented dev code.
+Without this condition, production code is loaded.
+
 ### `footnote(options?)`
 
 ### `footnoteHtml`
 
-> Note: `syntax` is the default export of this module, `html` is available at
-> `micromark-extension-footnote/html`.
-
-Support footnotes.
-The export of `syntax` is a function that can be called with options and returns
-an extension for the micromark parser (to tokenize footnotes; can be passed in
-`extensions`).
-The export of `html` is an extension for the default HTML compiler (to compile
-as HTML; can be passed in `htmlExtensions`).
+A function that can be called with options to get an extension for micromark to
+parse footnotes (can be passed in `extensions`) and an extension to compile them
+to HTML (can be passed in `htmlExtensions`).
 
 ###### `options.inlineNotes`
 
@@ -137,10 +133,10 @@ Whether to support `^[inline notes]` (`boolean`, default: `false`).
 
 *   [`remarkjs/remark`][remark]
     — markdown processor powered by plugins
+*   [`remarkjs/remark-footnotes`][remark-footnotes]
+    — remark plugin using this to support footnotes
 *   [`micromark/micromark`][micromark]
     — the smallest commonmark-compliant markdown parser that exists
-*   [`remarkjs/remark-footnotes`][remark-footnotes]
-    — remark plugin to support footnotes
 *   [`syntax-tree/mdast-util-footnote`][mdast-util-footnote]
     — mdast utility to support footnotes
 *   [`syntax-tree/mdast-util-from-markdown`][from-markdown]
@@ -209,8 +205,6 @@ abide by its terms.
 [to-markdown]: https://github.com/syntax-tree/mdast-util-to-markdown
 
 [remark]: https://github.com/remarkjs/remark
-
-[mdast]: https://github.com/syntax-tree/mdast
 
 [mdast-util-footnote]: https://github.com/syntax-tree/mdast-util-footnote
 
