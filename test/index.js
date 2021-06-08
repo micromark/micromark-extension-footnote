@@ -116,6 +116,15 @@ test('markdown -> html (micromark)', (t) => {
     'should match calls to definitions on the source of the label, not on resolved references'
   )
 
+  t.deepEqual(
+    micromark('[^1] and ^[b]\n\n[^1]: a', {
+      extensions: [syntax({inlineNotes: true})],
+      htmlExtensions: [html]
+    }),
+    '<p><a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> and <a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a></p>\n<section class="footnotes" role="doc-endnotes">\n<hr />\n<ol>\n<li id="fn1" role="doc-endnote">\n<p>a<a href="#fnref1" class="footnote-back" role="doc-backlink">↩</a></p>\n</li>\n<li id="fn2" role="doc-endnote">\n<p>b<a href="#fnref2" class="footnote-back" role="doc-backlink">↩</a></p>\n</li>\n</ol>\n</section>',
+    'should support correctly number inline footnotes after calls'
+  )
+
   t.end()
 })
 

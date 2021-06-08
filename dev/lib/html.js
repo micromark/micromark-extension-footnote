@@ -98,6 +98,9 @@ export const footnoteHtml = {
       createCall.call(this, String(counter))
     },
     inlineNoteText() {
+      /** @type {(string|number)[]} */
+      // @ts-expect-error It’s fine.
+      const calls = this.getData('footnoteCallOrder')
       /** @type {number} */
       // @ts-expect-error It’s fine.
       const counter = this.getData('inlineNoteStack').pop()
@@ -108,7 +111,7 @@ export const footnoteHtml = {
       if (!notes) this.setData('inlineNotes', (notes = {}))
 
       notes[counter] = '<p>' + this.resume() + '</p>'
-      createCall.call(this, String(counter))
+      createCall.call(this, String(calls.indexOf(counter) + 1))
     },
     null() {
       /** @type {(string|number)[]} */
