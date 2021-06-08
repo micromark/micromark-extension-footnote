@@ -149,7 +149,7 @@ export const footnoteHtml = {
         back =
           '<a href="#fnref' +
           counter +
-          '" class="footnote-back" role="doc-backlink">↩︎</a>'
+          '" class="footnote-back" role="doc-backlink">↩</a>'
         value = (typeof id === 'number' ? notes : definitions)[id].replace(
           /<\/p>(?:\r?\n|\r)?$/,
           injectBack

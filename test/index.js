@@ -19,7 +19,7 @@ test('markdown -> html (micromark)', (t) => {
       extensions: [syntax({inlineNotes: true})],
       htmlExtensions: [html]
     }),
-    '<p><a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>\n<section class="footnotes" role="doc-endnotes">\n<hr />\n<ol>\n<li id="fn1" role="doc-endnote">\n<p>inline<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p>\n</li>\n</ol>\n</section>',
+    '<p><a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>\n<section class="footnotes" role="doc-endnotes">\n<hr />\n<ol>\n<li id="fn1" role="doc-endnote">\n<p>inline<a href="#fnref1" class="footnote-back" role="doc-backlink">↩</a></p>\n</li>\n</ol>\n</section>',
     'should support inline footnotes w/ `inlineNotes: true`'
   )
 
@@ -37,7 +37,7 @@ test('markdown -> html (micromark)', (t) => {
       extensions: [syntax()],
       htmlExtensions: [html]
     }),
-    '<p>A call.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>\n<section class="footnotes" role="doc-endnotes">\n<hr />\n<ol>\n<li id="fn1" role="doc-endnote">\n<p>whatevs<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p>\n</li>\n</ol>\n</section>',
+    '<p>A call.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>\n<section class="footnotes" role="doc-endnotes">\n<hr />\n<ol>\n<li id="fn1" role="doc-endnote">\n<p>whatevs<a href="#fnref1" class="footnote-back" role="doc-backlink">↩</a></p>\n</li>\n</ol>\n</section>',
     'should support calls and definitions'
   )
 
@@ -49,7 +49,7 @@ test('markdown -> html (micromark)', (t) => {
       extensions: [syntax({inlineNotes: true})],
       htmlExtensions: [html]
     }),
-    '<p>Call.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p>\n<section class="footnotes" role="doc-endnotes">\n<hr />\n<ol>\n<li id="fn1" role="doc-endnote">\n<p>y<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p>\n</li>\n</ol>\n</section>',
+    '<p>Call.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p>\n<section class="footnotes" role="doc-endnotes">\n<hr />\n<ol>\n<li id="fn1" role="doc-endnote">\n<p>y<a href="#fnref1" class="footnote-back" role="doc-backlink">↩</a></p>\n</li>\n</ol>\n</section>',
     'should support 999 characters in a call / definition'
   )
 
@@ -67,7 +67,7 @@ test('markdown -> html (micromark)', (t) => {
       extensions: [syntax({inlineNotes: true})],
       htmlExtensions: [html]
     }),
-    '<p>Call.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p>\n<section class="footnotes" role="doc-endnotes">\n<hr />\n<ol>\n<li id="fn1" role="doc-endnote">\n<p>y<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p>\n</li>\n</ol>\n</section>',
+    '<p>Call.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p>\n<section class="footnotes" role="doc-endnotes">\n<hr />\n<ol>\n<li id="fn1" role="doc-endnote">\n<p>y<a href="#fnref1" class="footnote-back" role="doc-backlink">↩</a></p>\n</li>\n</ol>\n</section>',
     'should support a character escape in a call / definition'
   )
 
@@ -76,7 +76,7 @@ test('markdown -> html (micromark)', (t) => {
       extensions: [syntax({inlineNotes: true})],
       htmlExtensions: [html]
     }),
-    '<p>Call.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p>\n<section class="footnotes" role="doc-endnotes">\n<hr />\n<ol>\n<li id="fn1" role="doc-endnote">\n<p>y<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p>\n</li>\n</ol>\n</section>',
+    '<p>Call.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p>\n<section class="footnotes" role="doc-endnotes">\n<hr />\n<ol>\n<li id="fn1" role="doc-endnote">\n<p>y<a href="#fnref1" class="footnote-back" role="doc-backlink">↩</a></p>\n</li>\n</ol>\n</section>',
     'should support a character reference in a call / definition'
   )
 
@@ -85,7 +85,7 @@ test('markdown -> html (micromark)', (t) => {
       extensions: [syntax({inlineNotes: true})],
       htmlExtensions: [html]
     }),
-    '<p>Call.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p>\n<section class="footnotes" role="doc-endnotes">\n<hr />\n<ol>\n<li id="fn1" role="doc-endnote">\n<p>y<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p>\n</li>\n</ol>\n</section>',
+    '<p>Call.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p>\n<section class="footnotes" role="doc-endnotes">\n<hr />\n<ol>\n<li id="fn1" role="doc-endnote">\n<p>y<a href="#fnref1" class="footnote-back" role="doc-backlink">↩</a></p>\n</li>\n</ol>\n</section>',
     'should support a useful character escape in a call / definition'
   )
 
@@ -94,7 +94,7 @@ test('markdown -> html (micromark)', (t) => {
       extensions: [syntax({inlineNotes: true})],
       htmlExtensions: [html]
     }),
-    '<p>Call.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p>\n<section class="footnotes" role="doc-endnotes">\n<hr />\n<ol>\n<li id="fn1" role="doc-endnote">\n<p>y<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p>\n</li>\n</ol>\n</section>',
+    '<p>Call.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p>\n<section class="footnotes" role="doc-endnotes">\n<hr />\n<ol>\n<li id="fn1" role="doc-endnote">\n<p>y<a href="#fnref1" class="footnote-back" role="doc-backlink">↩</a></p>\n</li>\n</ol>\n</section>',
     'should support a useful character reference in a call / definition'
   )
 
