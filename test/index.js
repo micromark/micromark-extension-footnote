@@ -125,6 +125,42 @@ test('markdown -> html (micromark)', (t) => {
     'should support correctly number inline footnotes after calls'
   )
 
+  t.deepEqual(
+    micromark('[^1].\n\n[^1]: a\nb', {
+      extensions: [syntax({inlineNotes: true})],
+      htmlExtensions: [html]
+    }),
+    '<p><a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p>\n<section class="footnotes" role="doc-endnotes">\n<hr />\n<ol>\n<li id="fn1" role="doc-endnote">\n<p>a\nb<a href="#fnref1" class="footnote-back" role="doc-backlink">↩</a></p>\n</li>\n</ol>\n</section>',
+    'should support lazyness (1)'
+  )
+
+  t.deepEqual(
+    micromark('[^1].\n\n> [^1]: a\nb', {
+      extensions: [syntax({inlineNotes: true})],
+      htmlExtensions: [html]
+    }),
+    '<p><a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p>\n<blockquote>\n</blockquote>\n<section class="footnotes" role="doc-endnotes">\n<hr />\n<ol>\n<li id="fn1" role="doc-endnote">\n<p>a\nb<a href="#fnref1" class="footnote-back" role="doc-backlink">↩</a></p>\n</li>\n</ol>\n</section>',
+    'should support lazyness (2)'
+  )
+
+  t.deepEqual(
+    micromark('[^1].\n\n> [^1]: a\n> b', {
+      extensions: [syntax({inlineNotes: true})],
+      htmlExtensions: [html]
+    }),
+    '<p><a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p>\n<blockquote>\n</blockquote>\n<section class="footnotes" role="doc-endnotes">\n<hr />\n<ol>\n<li id="fn1" role="doc-endnote">\n<p>a\nb<a href="#fnref1" class="footnote-back" role="doc-backlink">↩</a></p>\n</li>\n</ol>\n</section>',
+    'should support lazyness (3)'
+  )
+
+  t.deepEqual(
+    micromark('[^1].\n\n[^1]: a\n\n    > b', {
+      extensions: [syntax({inlineNotes: true})],
+      htmlExtensions: [html]
+    }),
+    '<p><a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>.</p>\n<section class="footnotes" role="doc-endnotes">\n<hr />\n<ol>\n<li id="fn1" role="doc-endnote">\n<p>a</p>\n<blockquote>\n<p>b</p>\n</blockquote>\n<a href="#fnref1" class="footnote-back" role="doc-backlink">↩</a>\n</li>\n</ol>\n</section>',
+    'should support lazyness (4)'
+  )
+
   t.end()
 })
 
