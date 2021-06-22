@@ -1,6 +1,6 @@
 {
   "name": "micromark-extension-footnote",
-  "version": "0.3.2",
+  "version": "1.0.0",
   "description": "micromark extension to support footnotes",
   "license": "MIT",
   "keywords": [
