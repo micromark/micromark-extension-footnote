@@ -13,7 +13,7 @@
  *   Whether to support `^[inline notes]` (`boolean`, default: `false`).
  */
 
-import assert from 'assert'
+import assert from 'power-assert'
 import {blankLine} from 'micromark-core-commonmark'
 import {factorySpace} from 'micromark-factory-space'
 import {
